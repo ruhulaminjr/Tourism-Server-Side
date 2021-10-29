@@ -41,7 +41,6 @@ async function run() {
     app.get("/booking/:id", async (req, res) => {
       const id = ObjectId(req.params.id);
       const singleBook = await destinationCollection.findOne({ _id: id });
-      console.log(singleBook);
       res.send(singleBook);
     });
     app.post("/savebooking", async (req, res) => {
@@ -49,6 +48,18 @@ async function run() {
       const result = await bookingCollection.insertOne(newBook);
       res.send(result);
     });
+    app.get("/carts/:email", async (req, res) => {
+      const email = req.params.email;
+      const findCarts = bookingCollection.find({ Email: email });
+      if ((await findCarts.count()) > 0) {
+        res.send(await findCarts.toArray());
+      } else {
+        res.send({ found: false });
+      }
+    });
+    app.delete('/cartDelete/:id',(req,res)=>{
+      console.log(req.params.id)
+    })
   } finally {
   }
 }
