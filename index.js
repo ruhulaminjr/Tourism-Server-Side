@@ -24,7 +24,6 @@ async function run() {
     const destinationCollection = database.collection("destinations");
     const bookingCollection = database.collection("booking");
     app.post("/get-destination", async (req, res) => {
-      console.log(req.body);
       let newDestinaiton = req.body;
       const addedResult = await destinationCollection.insertOne(newDestinaiton);
       res.send(addedResult);
@@ -54,12 +53,38 @@ async function run() {
       if ((await findCarts.count()) > 0) {
         res.send(await findCarts.toArray());
       } else {
-        res.send({ found: false });
+        res.send([]);
       }
     });
-    app.delete('/cartDelete/:id',(req,res)=>{
-      console.log(req.params.id)
-    })
+    app.delete("/cartDelete/:id", async (req, res) => {
+      const id = ObjectId(req.params.id);
+      const deleteResult = await bookingCollection.deleteOne({ _id: id });
+      res.send(deleteResult);
+    });
+    app.get("/allOrders", async (req, res) => {
+      const ordersResult = bookingCollection.find({});
+      if ((await ordersResult.count()) > 0) {
+        res.send(await ordersResult.toArray());
+      } else {
+        res.send([]);
+      }
+    });
+    app.put("/update-status/:id", async (req, res) => {
+      const filter = { _id: ObjectId(req.params.id) };
+      const updateStatus = req.body.status;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: updateStatus,
+        },
+      };
+      const result = await bookingCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
   } finally {
   }
 }
